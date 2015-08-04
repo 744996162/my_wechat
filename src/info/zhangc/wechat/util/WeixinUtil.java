@@ -7,10 +7,16 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
+import info.zhangc.wechat.menu.ClickButton;
+import info.zhangc.wechat.menu.Menu;
+import info.zhangc.wechat.po.AccessToken;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import net.sf.json.JSONObject;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
@@ -59,6 +65,35 @@ public class WeixinUtil {
     }
 
 
+
+    public static JSONObject doPostStr(String url, String outStr) throws IOException {
+        DefaultHttpClient client = new DefaultHttpClient();
+        HttpPost httpPost = new HttpPost();
+        JSONObject jsonObject;
+        httpPost.setEntity(new StringEntity(outStr, "UTF-8"));
+        HttpResponse response = client.execute(httpPost);
+
+        String result = EntityUtils.toString(response.getEntity(),"UTF-8");
+        jsonObject = JSONObject.fromObject(result);
+        return jsonObject;
+
+    }
+
+
+
+
+    public static AccessToken getAccessToken() throws IOException, ParseException {
+        AccessToken token = new AccessToken();
+
+        String url = ACCESS_TOKEN_URL.replace("APPID", APPID).replace("APPSECRET",APPSECRET);
+        JSONObject jsonObject = doGetStr(url);
+        if (jsonObject!=null){
+            token.setToken(jsonObject.getString("access_token"));
+            token.setExpiresIn(jsonObject.getInt("expires_in"));
+        }
+        return token;
+    }
+
     public static String translateFull(String source) throws IOException, ParseException {
         String url = "http://openapi.baidu.com/public/2.0/bmt/translate?client_id=jNg0LPSBe691Il0CG5MwDupw&q=KEYWORD&from=auto&to=auto";
         url = url.replace("KEYWORD", URLEncoder.encode(source,"UTF-8"));
@@ -69,6 +104,17 @@ public class WeixinUtil {
             dst.append(map.get("dst"));
         }
         return dst.toString();
+    }
+
+    public static Menu initMenu(){
+        Menu menu = new Menu();
+        ClickButton button11 = new ClickButton();
+        button11.setName("click菜单");
+        button11.setType("click");
+        button11.setKey("11");
+
+        return menu;
+
     }
 
     public static String translate(String source) throws IOException, ParseException {
